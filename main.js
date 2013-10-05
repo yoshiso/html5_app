@@ -2,38 +2,68 @@
 (function() {
 
   $(function() {
-    var canvas, ctx, hasGetUserMedia, render, video;
-    hasGetUserMedia = function() {
-      return !!(navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia);
-    };
+    var CanvasController, canvas, canvasController, video,
+      _this = this;
+    CanvasController = (function() {
+
+      function CanvasController(video, canvas) {
+        var _this = this;
+        this.video = video;
+        this.canvas = canvas;
+        this.renderCanvas = function() {
+          return CanvasController.prototype.renderCanvas.apply(_this, arguments);
+        };
+        this.checkMedia();
+        navigator.getUserMedia = navigator.webkitGetUserMedia || navigator.getUserMedia;
+        window.URL = window.URL || window.webkitURL;
+        this.ctx = this.canvas.getContext('2d');
+        navigator.getUserMedia({
+          video: true
+        }, function(stream) {
+          this.localMediaStream = stream;
+          return this.video.src = window.URL.createObjectURL(this.localMediaStream);
+        }, function(err) {
+          alert('error');
+          return console.log(err);
+        });
+      }
+
+      CanvasController.prototype.renderCanvas = function() {
+        this.canvas.height = this.video.videoHeight;
+        this.canvas.width = this.video.videoWidth;
+        return this.ctx.drawImage(this.video, 0, 0);
+      };
+
+      CanvasController.prototype.hasGetUserMedia = function() {
+        return !!(navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia);
+      };
+
+      CanvasController.prototype.videoStart = function() {
+        this.video.play();
+        return this.timer = setInterval(this.renderCanvas, 100);
+      };
+
+      CanvasController.prototype.videoStop = function() {
+        this.localMediaStream.stop;
+        return clearInterval(this.timer);
+      };
+
+      CanvasController.prototype.checkMedia = function() {
+        if (this.hasGetUserMedia()) {
+          return console.log('カメラOk');
+        } else {
+          return alert('カメラが使用できません');
+        }
+      };
+
+      return CanvasController;
+
+    })();
+    window.CanvasController = CanvasController;
     video = $('#video')[0];
     canvas = $('#canvas')[0];
-    ctx = canvas.getContext('2d');
-    navigator.getUserMedia = navigator.webkitGetUserMedia || navigator.getUserMedia;
-    window.URL = window.URL || window.webkitURL;
-    if (hasGetUserMedia()) {
-      console.log('カメラOk');
-    } else {
-      alert('カメラが使用できません');
-    }
-    navigator.getUserMedia({
-      video: true
-    }, function(stream) {
-      var localMediaStream;
-      localMediaStream = stream;
-      video.src = window.URL.createObjectURL(localMediaStream);
-      video.play();
-      return setInterval(render, 100);
-    }, function(err) {
-      alert('error');
-      return console.log(err);
-    });
-    return render = function() {
-      console.log('rendered');
-      canvas.height = video.videoHeight;
-      canvas.width = video.videoWidth;
-      return ctx.drawImage(video, 0, 0);
-    };
+    canvasController = new CanvasController(video, canvas);
+    return canvasController.videoStart();
   });
 
 }).call(this);
