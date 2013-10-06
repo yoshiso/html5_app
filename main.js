@@ -2,9 +2,13 @@
 (function() {
 
   $(function() {
-    var CanvasController, canvas, canvasController, video,
+    var canvas, canvasController, video,
       _this = this;
-    CanvasController = (function() {
+    window.App = {
+      CanvasController: {},
+      ImageProcessingEngine: {}
+    };
+    App.CanvasController = (function() {
 
       function CanvasController(video, canvas) {
         var _this = this;
@@ -20,19 +24,14 @@
         navigator.getUserMedia({
           video: true
         }, function(stream) {
-          this.localMediaStream = stream;
-          return this.video.src = window.URL.createObjectURL(this.localMediaStream);
+          _this.localMediaStream = stream;
+          return _this.video.src = window.URL.createObjectURL(_this.localMediaStream);
         }, function(err) {
           alert('error');
           return console.log(err);
         });
+        console.log(this.localMediaStream);
       }
-
-      CanvasController.prototype.renderCanvas = function() {
-        this.canvas.height = this.video.videoHeight;
-        this.canvas.width = this.video.videoWidth;
-        return this.ctx.drawImage(this.video, 0, 0);
-      };
 
       CanvasController.prototype.hasGetUserMedia = function() {
         return !!(navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia);
@@ -44,8 +43,18 @@
       };
 
       CanvasController.prototype.videoStop = function() {
-        this.localMediaStream.stop;
+        this.localMediaStream.stop();
         return clearInterval(this.timer);
+      };
+
+      CanvasController.prototype.getImageData = function() {
+        return this.ctx.getImageData(0, 0, this.video.videoWidth, this.video.videoHeight);
+      };
+
+      CanvasController.prototype.renderCanvas = function() {
+        this.canvas.height = this.video.videoHeight;
+        this.canvas.width = this.video.videoWidth;
+        return this.ctx.drawImage(this.video, 0, 0);
       };
 
       CanvasController.prototype.checkMedia = function() {
@@ -59,11 +68,25 @@
       return CanvasController;
 
     })();
-    window.CanvasController = CanvasController;
+    App.ImageProcessingEngine = (function() {
+
+      function ImageProcessingEngine(image) {
+        this.image = image;
+        this.image;
+      }
+
+      return ImageProcessingEngine;
+
+    })();
     video = $('#video')[0];
     canvas = $('#canvas')[0];
-    canvasController = new CanvasController(video, canvas);
-    return canvasController.videoStart();
+    canvasController = new App.CanvasController(video, canvas);
+    $('#start').click(function() {
+      return canvasController.videoStart();
+    });
+    return $('#stop').click(function() {
+      return canvasController.videoStop();
+    });
   });
 
 }).call(this);

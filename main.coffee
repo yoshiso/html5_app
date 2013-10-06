@@ -1,11 +1,14 @@
 $ ->
+    window.App = 
+        CanvasController: {}
+        ImageProcessingEngine: {}
 
     #
     # video DOMオブジェクトをcanvasに描画して操作するためのクラス
     # @params video video DOMオブジェクト
     # @params canvas canvasDOMオブジェクト
     #
-    class CanvasController
+    class App.CanvasController
 
         constructor:(@video, @canvas) ->
             @checkMedia()
@@ -18,14 +21,14 @@ $ ->
 
             navigator.getUserMedia(
                 {video: true}
-                (stream) ->
+                (stream) =>
                     @localMediaStream = stream;
                     @video.src = window.URL.createObjectURL(@localMediaStream);
                 (err) ->
                     alert('error')
                     console.log(err)
             );
-
+            console.log(@localMediaStream)
         hasGetUserMedia: ->
             #WebRTCVideoが使えるかどうかを判定する
             return !!(navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia)
@@ -35,7 +38,7 @@ $ ->
             @timer = setInterval(@renderCanvas,100)
 
         videoStop: ->
-            @localMediaStream.stop
+            @localMediaStream.stop()
             clearInterval(@timer)
 
         getImageData: ->
@@ -53,20 +56,19 @@ $ ->
             else
                 alert('カメラが使用できません')
 
-    class ImageProcessingEngine
+    class App.ImageProcessingEngine
 
-        constructor:->
+        constructor:(@image)->
+            @image
 
-
-    window.CanvasController = CanvasController
     #videoオブジェクトを取得する
     video = $('#video')[0]
     canvas = $('#canvas')[0]
 
-    canvasController = new CanvasController(video,canvas)
-    canvasController.videoStart()
+    canvasController = new App.CanvasController(video,canvas)
 
-
+    $('#start').click(-> canvasController.videoStart())
+    $('#stop').click(-> canvasController.videoStop())
 
     
 
