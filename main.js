@@ -6,9 +6,12 @@
       _this = this;
     window.App = {
       CanvasController: {},
-      ImageProcessingEngine: {}
+      ImageProcessingEngine: {},
+      FlameDiffProcessingEngine: {}
     };
     App.CanvasController = (function() {
+
+      CanvasController.prototype.TimerPerSecond = 400;
 
       function CanvasController(video, canvas) {
         var _this = this;
@@ -30,7 +33,6 @@
           alert('error');
           return console.log(err);
         });
-        console.log(this.localMediaStream);
       }
 
       CanvasController.prototype.hasGetUserMedia = function() {
@@ -39,7 +41,7 @@
 
       CanvasController.prototype.videoStart = function() {
         this.video.play();
-        return this.timer = setInterval(this.renderCanvas, 100);
+        return this.timer = setInterval(this.renderCanvas, this.TimerPerSecond);
       };
 
       CanvasController.prototype.videoStop = function() {
@@ -54,7 +56,8 @@
       CanvasController.prototype.renderCanvas = function() {
         this.canvas.height = this.video.videoHeight;
         this.canvas.width = this.video.videoWidth;
-        return this.ctx.drawImage(this.video, 0, 0);
+        this.ctx.drawImage(this.video, 0, 0);
+        return this.ctx.putImageData(this.getProcessedImage(), 0, 0);
       };
 
       CanvasController.prototype.checkMedia = function() {
@@ -65,22 +68,108 @@
         }
       };
 
+      CanvasController.prototype.setEngine = function(imageEngine) {
+        this.imageEngine = imageEngine;
+      };
+
+      CanvasController.prototype.getProcessedImage = function() {
+        return this.imageEngine.execute(this.getImageData());
+      };
+
       return CanvasController;
 
     })();
     App.ImageProcessingEngine = (function() {
 
       function ImageProcessingEngine(image) {
-        this.image = image;
-        this.image;
+        this.width = image.width;
+        this.height = image.height;
+        this.imageData = image.data;
       }
 
+      ImageProcessingEngine.prototype.execute = function() {
+        return console.log('ok');
+      };
+
       return ImageProcessingEngine;
+
+    })();
+    App.FlameDiffProcessingEngine = (function() {
+
+      function FlameDiffProcessingEngine() {}
+
+      FlameDiffProcessingEngine.prototype.setImage = function(image) {
+        this.prevImage = this.image || null;
+        this.image = image;
+        this.width = image.width;
+        return this.height = image.height;
+      };
+
+      FlameDiffProcessingEngine.prototype.getImage = function() {
+        return this.image;
+      };
+
+      FlameDiffProcessingEngine.prototype.getDiff = function() {
+        var data, diff, index, prev, x, y, _i, _j, _ref, _ref1;
+        if (!this.prevImage) {
+          return null;
+        }
+        data = this.image.data;
+        prev = this.prevImage.data;
+        diff = [];
+        for (x = _i = 0, _ref = this.width; 0 <= _ref ? _i <= _ref : _i >= _ref; x = 0 <= _ref ? ++_i : --_i) {
+          for (y = _j = 0, _ref1 = this.height; 0 <= _ref1 ? _j <= _ref1 : _j >= _ref1; y = 0 <= _ref1 ? ++_j : --_j) {
+            index = (x + y * this.width) * 4;
+            diff[index + 0] = data[index + 0] - prev[index + 0];
+            if (diff[index + 0] < 0) {
+              diff[index + 0] = 0 - diff[index + 0];
+            }
+            diff[index + 1] = data[index + 1] - prev[index + 1];
+            if (diff[index + 1] < 0) {
+              diff[index + 1] = 0 - diff[index + 1];
+            }
+            diff[index + 2] = data[index + 2] - prev[index + 2];
+            if (diff[index + 2] < 0) {
+              diff[index + 2] = 0 - diff[index + 2];
+            }
+          }
+        }
+        return diff;
+      };
+
+      FlameDiffProcessingEngine.prototype.getProcessedImage = function() {
+        var before_image, data, diff, index, x, y, _i, _j, _ref, _ref1;
+        diff = this.getDiff();
+        console.log(diff);
+        before_image = this.image;
+        data = before_image.data;
+        for (x = _i = 0, _ref = this.width; 0 <= _ref ? _i <= _ref : _i >= _ref; x = 0 <= _ref ? ++_i : --_i) {
+          for (y = _j = 0, _ref1 = this.height; 0 <= _ref1 ? _j <= _ref1 : _j >= _ref1; y = 0 <= _ref1 ? ++_j : --_j) {
+            index = (x + y * this.width) * 4;
+            if (diff && diff[index + 0] > 50 && diff[index + 1] > 50 && diff[index + 2] > 50) {
+              data[index + 0] = 0;
+              data[index + 1] = 0;
+              data[index + 2] = 0;
+              data[index + 3] = 255;
+            }
+          }
+        }
+        before_image.data = data;
+        return before_image;
+      };
+
+      FlameDiffProcessingEngine.prototype.execute = function(image) {
+        this.setImage(image);
+        return this.getProcessedImage();
+      };
+
+      return FlameDiffProcessingEngine;
 
     })();
     video = $('#video')[0];
     canvas = $('#canvas')[0];
     canvasController = new App.CanvasController(video, canvas);
+    canvasController.setEngine(new App.FlameDiffProcessingEngine());
     $('#start').click(function() {
       return canvasController.videoStart();
     });
