@@ -65,8 +65,9 @@
     };
 
     FlameDiffProcessingEngine.prototype.getProcessedImage = function() {
-      var data, diff, index, x, y, _i, _j, _ref, _ref1;
+      var data, diff, index, point, x, y, _i, _j, _ref, _ref1;
       diff = this.getDiff();
+      point = this.getObjectPoint(diff);
       if (diff) {
         data = this.image.data;
         for (x = _i = 0, _ref = this.width - 1; 0 <= _ref ? _i <= _ref : _i >= _ref; x = 0 <= _ref ? ++_i : --_i) {
@@ -83,6 +84,25 @@
         this.image.data = data;
       }
       return this.image;
+    };
+
+    FlameDiffProcessingEngine.prototype.getObjectPoint = function(diffs) {
+      var pont, xDiff, yDiff, _i, _len, _results;
+      pont = [];
+      _results = [];
+      for (_i = 0, _len = diffs.length; _i < _len; _i++) {
+        xDiff = diffs[_i];
+        _results.push((function() {
+          var _j, _len1, _results1;
+          _results1 = [];
+          for (_j = 0, _len1 = xDiffs.length; _j < _len1; _j++) {
+            yDiff = xDiffs[_j];
+            _results1.push(console.log());
+          }
+          return _results1;
+        })());
+      }
+      return _results;
     };
 
     FlameDiffProcessingEngine.prototype.execute = function(image) {

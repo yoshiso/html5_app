@@ -58,6 +58,9 @@ class FlameDiffProcessingEngine
     getProcessedImage:->
         #target pixelを差分比較
         diff = @getDiff()
+
+        point = @getObjectPoint(diff)
+
         #閾値を超えるかどうか判別
         if diff
             #target pixelの支配する部分を塗りつぶす
@@ -73,6 +76,17 @@ class FlameDiffProcessingEngine
                         data[index + 3] = 255
             @image.data = data
         return @image
+
+    #
+    # 閾値をベースとしてラベリング処理を行い、各ラベル付けされた物体のcenterのPointを返す
+    # @params diff diffs[x][y] に差分の値の入ったオブジェクト
+    #
+    getObjectPoint:(diffs)->
+        pont = []
+        for xDiff in diffs
+            for yDiff in xDiffs
+                console.log()
+
 
 
     #
