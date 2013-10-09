@@ -1,0 +1,18 @@
+{
+  "name": "html5_app",
+  "version": "0.0.0",
+  "description": "科学実験用html5アプリ",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": "",
+  "author": "yoshiso",
+  "license": "BSD",
+  "gitHead": "f275d4f52e216df51842a9b03799ac4f441da939",
+  "devDependencies": {
+    "grunt": "~0.4.1",
+    "grunt-contrib-watch": "~0.5.3",
+    "grunt-contrib-coffee": "~0.7.0"
+  }
+}
